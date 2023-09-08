@@ -9,6 +9,7 @@ class Database:
 
         # Create a session factory
         self.Session = sessionmaker(bind=self.engine)
+        self.session = self.Session()
 
         # Initialize the database schema
         Base.metadata.create_all(self.engine)
@@ -23,6 +24,4 @@ class Database:
             self.session.commit()
             return instance
 
-    @property
-    def session(self):
-        return self.Session()
+

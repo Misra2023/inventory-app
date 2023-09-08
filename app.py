@@ -1,9 +1,10 @@
 import click
 from database.database import Database
 from models.models import Product
-
+from seed import seed_database
 # Initialize the database
 db = Database()
+seed_database()
 
 @click.group()
 def cli():
