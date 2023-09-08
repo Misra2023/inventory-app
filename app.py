@@ -1,39 +1,50 @@
 import click
-
 from database.database import Database
-from models.models import Product, Category, Location
+from models.models import Product
 
-# ...rest of your code...
+# Initialize the database
+db = Database()
 
 @click.group()
 def cli():
-    """Business Inventory CLI"""
+    pass
 
 @cli.command()
 @click.option('--name', prompt='Product Name', help='Name of the product')
-@click.option('--quantity', prompt='Quantity', type=int, help='Quantity of the product')
-@click.option('--category', prompt='Category', help='Category of the product')
-@click.option('--location', prompt='Location', help='Location of the product')
-def add_product(name, quantity, category, location):
-    """Add a new product to the inventory"""
-    db = Database()
+@click.option('--quantity', prompt='Product Quantity', help='Quantity of the product')
+def add_product(name, quantity):
+    """Add a new product to the database."""
     product = Product(name=name, quantity=quantity)
-    
-    # Get or create category and location
-    product.category = db.get_or_create(Category, name=category)
-    product.location = db.get_or_create(Location, name=location)
-    
     db.session.add(product)
     db.session.commit()
-    click.echo('Product added successfully.')
+    print(f'Added product: {product.name} with quantity: {product.quantity}')
 
 @cli.command()
-def list_products():
-    """List all products in the inventory"""
-    db = Database()
-    products = db.session.query(Product).all()
-    for product in products:
-        click.echo(f'Product: {product.name}, Quantity: {product.quantity}')
+@click.option('--product-id', prompt='Product ID', help='ID of the product to delete')
+def delete_product(product_id):
+    """Delete a product from the database by ID."""
+    product = db.session.query(Product).filter_by(id=product_id).first()
+    if product:
+        db.session.delete(product)
+        db.session.commit()
+        print(f'Deleted product: {product.name} with ID: {product.id}')
+    else:
+        print(f'Product with ID {product_id} not found.')
+
+@cli.command()
+@click.option('--product-id', prompt='Product ID', help='ID of the product to update')
+@click.option('--name', prompt='New Product Name', help='New name for the product')
+@click.option('--quantity', prompt='New Product Quantity', help='New quantity for the product')
+def update_product(product_id, name, quantity):
+    """Update a product's name and quantity by ID."""
+    product = db.session.query(Product).filter_by(id=product_id).first()
+    if product:
+        product.name = name
+        product.quantity = quantity
+        db.session.commit()
+        print(f'Updated product: {product.name} with ID: {product.id}')
+    else:
+        print(f'Product with ID {product_id} not found.')
 
 if __name__ == '__main__':
     cli()
